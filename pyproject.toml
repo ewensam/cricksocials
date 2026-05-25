@@ -1,0 +1,73 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cricksocials"
+version = "0.1.0"
+description = "Automated Instagram-ready match result graphics and captions for village cricket clubs"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+authors = [{ name = "CrickSocials Contributors" }]
+keywords = ["cricket", "social-media", "automation", "instagram"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Utilities",
+]
+
+dependencies = [
+  "requests>=2.31",
+  "cloudscraper>=1.2",
+  "beautifulsoup4>=4.12",
+  "lxml>=5.0",
+  "Pillow>=10.0",
+  "pydantic>=2.0",
+  "pyyaml>=6.0",
+  "click>=8.1",
+]
+
+[project.optional-dependencies]
+gdrive = [
+  "google-api-python-client>=2.0",
+  "google-auth>=2.0",
+]
+dev = [
+  "pytest>=7.0",
+  "pytest-cov",
+  "ruff",
+  "mypy",
+]
+
+[project.scripts]
+cricksocials = "cricksocials.cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/cricksocials/cricksocials"
+Issues = "https://github.com/cricksocials/cricksocials/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cricksocials"]
+
+[tool.ruff]
+src = ["src"]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short"

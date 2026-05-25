@@ -1,0 +1,15 @@
+# Win caption templates.
+# One template per line. Blank lines and lines starting with # are ignored.
+# Available placeholders:
+#   {club}              — club short_name from config
+#   {team}              — team name (e.g. "1st XI")
+#   {score_line}        — e.g. "B&B 187/4 beat Stithians 143ao"
+#   {batting_highlight} — e.g. "J. Smith 67*"
+#   {bowling_highlight} — e.g. "A. Jones 3/24"
+#   {hashtags}          — all configured hashtags joined with spaces
+
+Another win for {club} {team}! 🏏 {score_line} ✅ {hashtags}
+Big performance from {club} {team}. {score_line} 🙌 {hashtags}
+{team} doing what they do 💪 {score_line} {hashtags}
+Three points! {club} {team} get the job done. {score_line} {hashtags}
+Match day magic ✨ {club} {team} come out on top. {score_line} {hashtags}

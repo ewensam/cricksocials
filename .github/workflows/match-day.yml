@@ -1,0 +1,43 @@
+name: Match Day
+
+# Runs twice a week — adjust the schedule to suit your club's fixture list.
+# Saturdays at 20:00 UTC (9pm BST) and Sundays at 19:00 UTC (8pm BST).
+on:
+  schedule:
+    - cron: "0 20 * * 6"  # Saturday 20:00 UTC
+    - cron: "0 19 * * 0"  # Sunday  19:00 UTC
+  workflow_dispatch:       # Allow manual trigger from the Actions UI
+
+jobs:
+  run:
+    name: Generate match day posts
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install cricksocials
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      - name: Run cricksocials
+        run: cricksocials run
+        # Add --config path/to/config.yaml if your config isn't in the repo root.
+        # Add Google Drive credentials as repo secrets if using the gdrive adapter:
+        # env:
+        #   GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+
+      - name: Commit drafted posts back to repo
+        # Only relevant if using the local adapter (output goes to drafts/).
+        # Skip or replace with a Drive upload step if using google_drive adapter.
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "drafts/"
+          message: "chore: add match day drafts [skip ci]"
+          default_author: github_actions

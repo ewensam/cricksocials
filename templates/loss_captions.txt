@@ -1,0 +1,8 @@
+# Loss caption templates.
+# One template per line. Blank lines and lines starting with # are ignored.
+# Same placeholders as win_captions.txt — see that file for the full list.
+
+Tough one today for {club} {team}. {score_line} — we'll be back stronger 💪 {hashtags}
+Not the result we wanted, but heads up {club} {team}. {score_line} {hashtags}
+A hard-fought game. {club} {team} keep pushing. {score_line} {hashtags}
+{team} gave it everything. {score_line} — on to the next one 🏏 {hashtags}

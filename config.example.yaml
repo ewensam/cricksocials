@@ -1,0 +1,64 @@
+# CrickSocials — example config for a village cricket club.
+# Copy this to config.yaml and fill in your details.
+# Run `cricksocials validate` to check everything is wired up.
+
+club:
+  name: "Bridestowe and Belstone CC"           # Full club name (used in captions)
+  short_name: "B&B"                            # Short name (used in image overlays)
+  play_cricket_subdomain: "bridestoweandbelstone"
+  # Resulting URL: https://bridestoweandbelstone.play-cricket.com
+
+teams:
+  - name: "1st XI"
+    identifier: "1st"
+  - name: "2nd XI"
+    identifier: "2nd"
+  - name: "3rd XI"
+    identifier: "3rd"
+  - name: "Sunday XI"
+    identifier: "Sunday"
+
+branding:
+  logo_path: ./assets/logo.png
+  colours:
+    primary: "#1B2A4A"       # Dark overlay / background colour
+    accent: "#2D7F4E"        # Highlight colour
+    text: "#FFFFFF"          # Text colour on the image
+  overlay_opacity: 0.70      # 0.0 = transparent, 1.0 = solid. 0.65-0.75 works well.
+  fonts:
+    bold: ./assets/fonts/Montserrat-Bold.ttf
+    regular: ./assets/fonts/Montserrat-Regular.ttf
+
+stats:
+  batting_threshold_runs: 30        # Highlight a batter who scored >= this
+  bowling_threshold_wickets: 2      # Highlight a bowler who took >= this
+  fallback_to_top_performer: true   # If nobody hits the threshold, show the best anyway
+
+photos:
+  adapter: local            # "local" or "google_drive"
+  local:
+    win_dir: ./photos/win   # Put JPG/PNG files here — picked at random on a win
+    loss_dir: ./photos/loss # Put JPG/PNG files here — picked at random on a loss
+
+output:
+  adapter: local            # "local" or "google_drive"
+  local:
+    drafts_dir: ./drafts    # Generated images and captions are written here
+
+captions:
+  template_dir: ./templates # Contains win_captions.txt and loss_captions.txt
+  hashtags:
+    - "#DevonCricket"
+    - "#VillageCricket"
+    # Add your own:
+    # - "#BBCC"
+
+scraping:
+  request_delay_seconds: 3          # Polite delay between HTTP requests
+  use_cloudscraper_fallback: true   # Retry with cloudscraper if plain requests fails
+  user_agent: >-
+    Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
+    (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+
+state:
+  path: ./state/processed_matches.json   # Tracks which matches have been processed
