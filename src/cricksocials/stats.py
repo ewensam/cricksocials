@@ -10,7 +10,6 @@ from __future__ import annotations
 from cricksocials.config import StatsConfig
 from cricksocials.parser import BattingPerformance, BowlingPerformance, InningsData, MatchResult
 
-
 # ---------------------------------------------------------------------------
 # Highlight selection
 # ---------------------------------------------------------------------------

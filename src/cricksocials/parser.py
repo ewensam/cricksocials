@@ -25,7 +25,6 @@ from typing import Literal
 
 from bs4 import BeautifulSoup, Tag
 
-
 # ---------------------------------------------------------------------------
 # Data classes
 # ---------------------------------------------------------------------------
@@ -124,7 +123,7 @@ def _parse_match_id(soup: BeautifulSoup) -> str:
     """Extract match ID from the nvplay widget or the print link."""
     nvplay = soup.find("nvplay", attrs={"match-id": True})
     if nvplay:
-        return str(nvplay["match-id"])  # type: ignore[index]
+        return str(nvplay["match-id"])
 
     # Fallback: parse from /website/results/{id}/print
     print_link = soup.find("a", href=re.compile(r"/website/results/(\d+)/print"))
@@ -175,8 +174,9 @@ def _parse_result(soup: BeautifulSoup) -> tuple[str, str, ResultOutcome]:
         raise ValueError("Could not find .match-ttl element")
 
     home_club = match_ttl.get_text(strip=True)
-    classes = match_ttl.get("class", [])
-    class_str = " ".join(classes)
+    raw_classes: object = match_ttl.get("class") or []
+    classes = raw_classes if isinstance(raw_classes, list) else [raw_classes]
+    class_str = " ".join(str(c) for c in classes)
 
     # Determine outcome from CSS class (most reliable)
     if "win-cb-name" in class_str:
@@ -232,7 +232,7 @@ def _parse_innings(soup: BeautifulSoup) -> list[InningsData]:
     innings_list: list[InningsData] = []
 
     for tab_a in tab_nav.find_all("a", href=re.compile(r"^#innings")):
-        innings_id = tab_a["href"].lstrip("#")  # e.g. "innings8398833"
+        innings_id = str(tab_a["href"]).lstrip("#")  # e.g. "innings8398833"
         team_name = tab_a.get_text(strip=True)
 
         pane = soup.find(id=innings_id)
@@ -302,7 +302,11 @@ def _parse_batting_table(pane: Tag) -> list[BattingPerformance]:
 
         try:
             runs_strong = stds[0].find("strong")
-            runs = int(runs_strong.get_text(strip=True) if runs_strong else stds[0].get_text(strip=True))
+            if runs_strong:
+                runs_text = runs_strong.get_text(strip=True)
+            else:
+                runs_text = stds[0].get_text(strip=True)
+            runs = int(runs_text)
             balls = int(stds[1].get_text(strip=True) or 0)
             fours = int(stds[2].get_text(strip=True) or 0)
             sixes = int(stds[3].get_text(strip=True) or 0)

@@ -9,8 +9,6 @@ from __future__ import annotations
 
 from datetime import date
 
-import pytest
-
 from cricksocials.config import StatsConfig
 from cricksocials.parser import (
     BattingPerformance,
@@ -25,7 +23,6 @@ from cricksocials.stats import (
     select_batting_highlight,
     select_bowling_highlight,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures / helpers
@@ -123,7 +120,10 @@ class TestSelectBattingHighlight:
 
 class TestSelectBowlingHighlight:
     def test_picks_player_above_threshold(self) -> None:
-        bowling = [make_bowl("C. Penberthy", wickets=5, runs=14), make_bowl("S. Gillespie", wickets=1, runs=20)]
+        bowling = [
+            make_bowl("C. Penberthy", wickets=5, runs=14),
+            make_bowl("S. Gillespie", wickets=1, runs=20),
+        ]
         result = select_bowling_highlight(bowling, DEFAULT_STATS)
         assert result is not None
         assert result.name == "C. Penberthy"

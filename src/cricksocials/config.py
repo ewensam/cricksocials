@@ -93,7 +93,7 @@ class Config(BaseModel):
     state: StateConfig = Field(default_factory=StateConfig)
 
     @model_validator(mode="after")
-    def _at_least_one_team(self) -> "Config":
+    def _at_least_one_team(self) -> Config:
         if not self.teams:
             raise ValueError("At least one team must be configured under 'teams:'")
         return self

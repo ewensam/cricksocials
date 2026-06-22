@@ -43,6 +43,7 @@ dev = [
   "pytest-cov",
   "ruff",
   "mypy",
+  "types-PyYAML",
 ]
 
 [project.scripts]
@@ -67,6 +68,10 @@ select = ["E", "F", "I", "UP"]
 python_version = "3.11"
 strict = true
 files = ["src"]
+
+[[tool.mypy.overrides]]
+module = "cloudscraper.*"
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

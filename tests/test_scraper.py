@@ -17,7 +17,6 @@ import pytest
 
 from cricksocials.scraper import match_url, matches_list_url
 
-
 # ---------------------------------------------------------------------------
 # URL construction (no network)
 # ---------------------------------------------------------------------------

@@ -24,7 +24,6 @@ import requests
 
 from cricksocials.config import ScrapingConfig
 
-
 # ---------------------------------------------------------------------------
 # Data classes
 # ---------------------------------------------------------------------------
@@ -138,7 +137,7 @@ def list_recent_results(
     refs: list[MatchRef] = []
 
     for a_tag in soup.find_all("a", href=re.compile(r"^/website/results/\d+$")):
-        href = a_tag["href"]
+        href = str(a_tag["href"])
         m = re.search(r"/website/results/(\d+)$", href)
         if not m:
             continue
@@ -167,7 +166,7 @@ def _extract_nearby_date(tag: object) -> date | None:
     # Walk up to the parent row/cell and look for a date pattern
     from bs4 import Tag
 
-    node = tag  # type: ignore[assignment]
+    node = tag
     for _ in range(4):  # look up to 4 levels of ancestor
         if not isinstance(node, Tag):
             break
@@ -186,5 +185,5 @@ def _extract_nearby_date(tag: object) -> date | None:
                 return datetime(int(m2.group(3)), int(m2.group(2)), int(m2.group(1))).date()
             except ValueError:
                 pass
-        node = getattr(node, "parent", None)  # type: ignore[assignment]
+        node = getattr(node, "parent", None)
     return None

@@ -6,7 +6,6 @@ Phase 13 will implement GoogleDrivePhotoSource.
 
 from __future__ import annotations
 
-from typing import Literal
 
 # TODO (Phase 5): Define PhotoRef dataclass (adapter, path/id, category)
 #
