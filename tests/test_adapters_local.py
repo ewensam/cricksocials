@@ -1,0 +1,67 @@
+"""Tests for the LocalFolderPhotoSource adapter (Phase 5)."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import pytest
+
+from cricksocials.adapters.photo_source import (
+    LocalFolderPhotoSource,
+    PhotoRef,
+    pick_random_photo,
+)
+from cricksocials.config import LocalPhotosConfig
+
+
+@pytest.fixture
+def photo_dirs(tmp_path: Path) -> LocalPhotosConfig:
+    win_dir = tmp_path / "win"
+    loss_dir = tmp_path / "loss"
+    win_dir.mkdir()
+    loss_dir.mkdir()
+
+    (win_dir / "a.jpg").write_bytes(b"fake-jpg-a")
+    (win_dir / "b.png").write_bytes(b"fake-png-b")
+    (win_dir / "notes.txt").write_bytes(b"not a photo")
+    (loss_dir / "c.jpeg").write_bytes(b"fake-jpeg-c")
+
+    return LocalPhotosConfig(win_dir=win_dir, loss_dir=loss_dir)
+
+
+class TestLocalFolderPhotoSource:
+    def test_list_photos_filters_by_extension(self, photo_dirs: LocalPhotosConfig) -> None:
+        source = LocalFolderPhotoSource(photo_dirs)
+        refs = source.list_photos("win")
+        names = sorted(Path(r.location).name for r in refs)
+        assert names == ["a.jpg", "b.png"]
+        assert all(r.category == "win" and r.adapter == "local" for r in refs)
+
+    def test_list_photos_separates_categories(self, photo_dirs: LocalPhotosConfig) -> None:
+        source = LocalFolderPhotoSource(photo_dirs)
+        loss_refs = source.list_photos("loss")
+        assert len(loss_refs) == 1
+        assert Path(loss_refs[0].location).name == "c.jpeg"
+
+    def test_list_photos_missing_dir_returns_empty(self, tmp_path: Path) -> None:
+        config = LocalPhotosConfig(win_dir=tmp_path / "missing", loss_dir=tmp_path / "loss")
+        source = LocalFolderPhotoSource(config)
+        assert source.list_photos("win") == []
+
+    def test_fetch_photo_reads_bytes(self, photo_dirs: LocalPhotosConfig) -> None:
+        source = LocalFolderPhotoSource(photo_dirs)
+        ref = PhotoRef(adapter="local", location=str(photo_dirs.win_dir / "a.jpg"), category="win")
+        assert source.fetch_photo(ref) == b"fake-jpg-a"
+
+
+class TestPickRandomPhoto:
+    def test_returns_none_when_empty(self, tmp_path: Path) -> None:
+        config = LocalPhotosConfig(win_dir=tmp_path / "missing", loss_dir=tmp_path / "loss")
+        source = LocalFolderPhotoSource(config)
+        assert pick_random_photo(source, "win") is None
+
+    def test_returns_one_of_the_available_refs(self, photo_dirs: LocalPhotosConfig) -> None:
+        source = LocalFolderPhotoSource(photo_dirs)
+        ref = pick_random_photo(source, "win")
+        assert ref is not None
+        assert Path(ref.location).name in {"a.jpg", "b.png"}
