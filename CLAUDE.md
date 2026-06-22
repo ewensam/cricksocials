@@ -39,17 +39,15 @@ examples/            ← reference deployments (B&B pilot goes here)
 
 ## Phase 6 prerequisite — assets needed before image generation
 
-**Do not start Phase 6 (`image_gen.py`) until the user has added these files:**
+All assets below are now in place — Phase 6 is unblocked.
 
-| File | Where | Notes |
-|---|---|---|
-| `assets/logo.png` | repo root | B&B logo, PNG with transparent background preferred |
-| `assets/fonts/Montserrat-Bold.ttf` | repo root | Free from fonts.google.com/specimen/Montserrat |
-| `assets/fonts/Montserrat-Regular.ttf` | repo root | Same download |
-| `photos/win/*.jpg` (2–5 photos) | repo root | Match/celebration photos for win posts |
-| `photos/loss/*.jpg` (2–5 photos) | repo root | Match/neutral photos for loss posts |
+| File | Notes |
+|---|---|
+| `assets/logo.png` | B&B logo |
+| `assets/fonts/Montserrat-Bold.ttf` / `Montserrat-Regular.ttf` | From fonts.google.com/specimen/Montserrat |
+| `photos/win/*.jpg`, `photos/loss/*.jpg` (8 each) | **Temporary placeholders** from a single match (BCC v Hatherleigh, 25 May 2024) — sorted by visual energy, not real result. See `photos/README.md`. Replace with a curated set before going live. |
 
-After adding assets, run `cricksocials preview` to validate the output before proceeding.
+After adding/replacing assets, run `cricksocials preview` to validate the output.
 
 ## GitHub Actions
 
