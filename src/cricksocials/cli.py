@@ -2,7 +2,24 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import click
+
+from cricksocials.adapters.photo_source import LocalFolderPhotoSource
+from cricksocials.config import Config, load_config
+from cricksocials.image_gen import compose_preview_image
+from cricksocials.orchestrator import run_pipeline
+from cricksocials.scraper import list_recent_results
+from cricksocials.state import StateStore
+
+
+def _load_config_or_exit(ctx: click.Context) -> Config:
+    config_path = ctx.obj["config"]
+    try:
+        return load_config(config_path)
+    except (FileNotFoundError, ValueError) as exc:
+        raise click.ClickException(str(exc)) from exc
 
 
 @click.group()
@@ -43,9 +60,23 @@ def run(ctx: click.Context, dry_run: bool, match_id: str | None) -> None:
     Use --dry-run to see what would be processed without writing anything.
     Use --match-id to force-process a specific match regardless of state.
     """
-    config_path = ctx.obj["config"]
-    click.echo(f"[stub] run  config={config_path}  dry_run={dry_run}  match_id={match_id}")
-    click.echo("Not implemented yet — coming in Phase 10.")
+    config = _load_config_or_exit(ctx)
+    result = run_pipeline(config, dry_run=dry_run, match_id=match_id)
+
+    for processed in result.processed:
+        where = processed.location or "(dry run, not written)"
+        click.echo(f"Processed match {processed.match_id} ({processed.team}) -> {where}")
+    for skipped_id in result.skipped_match_ids:
+        click.echo(f"Skipped already-processed match {skipped_id}")
+    for failed_id, message in result.errors:
+        click.echo(f"Error processing match {failed_id}: {message}", err=True)
+
+    click.echo(
+        f"Done: {len(result.processed)} processed, "
+        f"{len(result.skipped_match_ids)} skipped, {len(result.errors)} errors."
+    )
+    if result.errors:
+        ctx.exit(1)
 
 
 # ---------------------------------------------------------------------------
@@ -56,18 +87,48 @@ def run(ctx: click.Context, dry_run: bool, match_id: str | None) -> None:
 @cli.command()
 @click.pass_context
 def validate(ctx: click.Context) -> None:
-    """Check config, paths, and connectivity.
+    """Check config, paths, and assets.
 
     Validates the config file structure, verifies that logo and font files
-    exist, checks that photo directories are populated, and (optionally) does
-    a connectivity probe to Play Cricket.
+    exist, and checks that photo directories are populated.
 
     Use this after editing config.yaml to confirm everything is wired up
     before your first real run.
     """
-    config_path = ctx.obj["config"]
-    click.echo(f"[stub] validate  config={config_path}")
-    click.echo("Not implemented yet — coming in Phase 11.")
+    config = _load_config_or_exit(ctx)
+
+    photo_source = LocalFolderPhotoSource(config.photos.local)
+    win_count = len(photo_source.list_photos("win"))
+    loss_count = len(photo_source.list_photos("loss"))
+
+    checks = [
+        ("Logo file exists", config.branding.logo_path.is_file(), str(config.branding.logo_path)),
+        ("Bold font exists", config.branding.fonts.bold.is_file(), str(config.branding.fonts.bold)),
+        (
+            "Regular font exists",
+            config.branding.fonts.regular.is_file(),
+            str(config.branding.fonts.regular),
+        ),
+        (
+            f"Win photos present ({win_count} found)",
+            win_count > 0,
+            str(config.photos.local.win_dir),
+        ),
+        (
+            f"Loss photos present ({loss_count} found)",
+            loss_count > 0,
+            str(config.photos.local.loss_dir),
+        ),
+    ]
+
+    all_ok = True
+    for label, ok, detail in checks:
+        click.echo(f"[{'OK' if ok else 'FAIL'}] {label} ({detail})")
+        all_ok = all_ok and ok
+
+    if not all_ok:
+        raise click.ClickException("One or more checks failed — see above.")
+    click.echo("All checks passed.")
 
 
 # ---------------------------------------------------------------------------
@@ -92,9 +153,10 @@ def preview(ctx: click.Context, output: str) -> None:
 
     The output image is written to --output (default: preview.png).
     """
-    config_path = ctx.obj["config"]
-    click.echo(f"[stub] preview  config={config_path}  output={output}")
-    click.echo("Not implemented yet — coming in Phase 11.")
+    config = _load_config_or_exit(ctx)
+    png_bytes = compose_preview_image(config)
+    Path(output).write_bytes(png_bytes)
+    click.echo(f"Wrote preview image to {output}")
 
 
 # ---------------------------------------------------------------------------
@@ -120,6 +182,15 @@ def list_recent(ctx: click.Context, limit: int) -> None:
     Useful for auditing state or deciding which match to force-process
     with 'cricksocials run --match-id ID'.
     """
-    config_path = ctx.obj["config"]
-    click.echo(f"[stub] list-recent  config={config_path}  limit={limit}")
-    click.echo("Not implemented yet — coming in Phase 3+.")
+    config = _load_config_or_exit(ctx)
+    state = StateStore.load(config.state.path)
+    refs = list_recent_results(config.club.play_cricket_subdomain, config.scraping, limit=limit)
+
+    if not refs:
+        click.echo("No recent matches found.")
+        return
+
+    for ref in refs:
+        status = "processed" if state.is_processed(ref.match_id) else "pending"
+        date_str = ref.match_date.isoformat() if ref.match_date else "unknown date"
+        click.echo(f"{ref.match_id}  {date_str}  [{status}]  {ref.result_summary or ''}")

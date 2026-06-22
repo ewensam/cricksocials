@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# CrickSocials — per-club config and generated artifacts
+config.yaml
+drafts/
+state/
+preview.png
