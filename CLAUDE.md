@@ -37,6 +37,20 @@ examples/            ← reference deployments (B&B pilot goes here)
 - Ruff for lint/format (`ruff check`, `ruff format`); mypy strict for type checking
 - Test with `pytest`; use `click.testing.CliRunner` for CLI tests
 
+## Phase 6 prerequisite — assets needed before image generation
+
+**Do not start Phase 6 (`image_gen.py`) until the user has added these files:**
+
+| File | Where | Notes |
+|---|---|---|
+| `assets/logo.png` | repo root | B&B logo, PNG with transparent background preferred |
+| `assets/fonts/Montserrat-Bold.ttf` | repo root | Free from fonts.google.com/specimen/Montserrat |
+| `assets/fonts/Montserrat-Regular.ttf` | repo root | Same download |
+| `photos/win/*.jpg` (2–5 photos) | repo root | Match/celebration photos for win posts |
+| `photos/loss/*.jpg` (2–5 photos) | repo root | Match/neutral photos for loss posts |
+
+After adding assets, run `cricksocials preview` to validate the output before proceeding.
+
 ## GitHub Actions
 
 - `ci.yml` — runs on every push/PR: pytest + ruff + mypy on Python 3.11 & 3.12
