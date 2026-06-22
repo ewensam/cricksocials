@@ -1,17 +1,19 @@
-"""Tests for the LocalFolderPhotoSource adapter (Phase 5)."""
+"""Tests for the local-folder photo source and output sink adapters (Phases 5+8)."""
 
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 
 import pytest
 
+from cricksocials.adapters.output_sink import LocalFolderOutputSink, PostDraft
 from cricksocials.adapters.photo_source import (
     LocalFolderPhotoSource,
     PhotoRef,
     pick_random_photo,
 )
-from cricksocials.config import LocalPhotosConfig
+from cricksocials.config import LocalOutputConfig, LocalPhotosConfig
 
 
 @pytest.fixture
@@ -65,3 +67,41 @@ class TestPickRandomPhoto:
         ref = pick_random_photo(source, "win")
         assert ref is not None
         assert Path(ref.location).name in {"a.jpg", "b.png"}
+
+
+class TestLocalFolderOutputSink:
+    def test_write_post_creates_dated_team_dir_with_image_and_caption(
+        self, tmp_path: Path
+    ) -> None:
+        config = LocalOutputConfig(drafts_dir=tmp_path / "drafts")
+        sink = LocalFolderOutputSink(config)
+        draft = PostDraft(
+            image_bytes=b"fake-png-bytes",
+            caption="Great win today!",
+            match_id="7303496",
+            date=date(2026, 5, 25),
+            team="1st XI",
+        )
+
+        location = sink.write_post(draft)
+
+        team_dir = tmp_path / "drafts" / "2026-05-25" / "1st XI"
+        assert location == str(team_dir)
+        assert (team_dir / "7303496.png").read_bytes() == b"fake-png-bytes"
+        assert (team_dir / "7303496.txt").read_text(encoding="utf-8") == "Great win today!"
+
+    def test_write_post_sanitises_unsafe_team_name(self, tmp_path: Path) -> None:
+        config = LocalOutputConfig(drafts_dir=tmp_path / "drafts")
+        sink = LocalFolderOutputSink(config)
+        draft = PostDraft(
+            image_bytes=b"x",
+            caption="x",
+            match_id="1",
+            date=date(2026, 1, 1),
+            team="Sunday XI / A",
+        )
+
+        location = sink.write_post(draft)
+
+        assert Path(location).is_dir()
+        assert "/" not in Path(location).name
