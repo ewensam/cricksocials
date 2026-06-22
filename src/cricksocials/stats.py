@@ -136,7 +136,7 @@ def format_score_line(
         opposition = _find_opposition_name(match.innings, our_team_name)
         return f"Match abandoned ({our_short_name} vs {opposition})"
 
-    our_innings = _find_our_innings(match.innings, our_team_name)
+    our_innings = find_our_innings(match.innings, our_team_name)
     their_innings = _find_opposition_innings(match.innings, our_team_name)
 
     our_score = _score_str(our_innings) if our_innings else "?"
@@ -167,7 +167,8 @@ def _score_str(innings: InningsData) -> str:
     return f"{innings.total_runs}/{innings.wickets_down}"
 
 
-def _find_our_innings(innings: list[InningsData], our_team_name: str) -> InningsData | None:
+def find_our_innings(innings: list[InningsData], our_team_name: str) -> InningsData | None:
+    """Return the innings belonging to *our_team_name*, matched by substring."""
     our_lower = our_team_name.lower()
     for i in innings:
         if our_lower in i.team_name.lower():
